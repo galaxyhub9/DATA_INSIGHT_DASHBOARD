@@ -19,20 +19,18 @@
                     <option value="">Select Sector</option>
                     <option value="Energy">Energy</option>
                     <option value="Healthcare">Healthcare</option>
-                    <!-- Add more options here -->
                 </select>
             </div>
             <div class="col-md-4">
-                <label for="relevanceFilter" class="form-label">relevance</label>
+                <label for="relevanceFilter" class="form-label">Relevance</label>
                 <select id="relevanceFilter" class="form-select">
-                    <option value="">Select relevance</option>
+                    <option value="">Select Relevance</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>
                     <option value="5">5</option>
                     <option value="6">6</option>
-                    <!-- Add more options here -->
                 </select>
             </div>
             <div class="col-md-4">
@@ -40,66 +38,129 @@
             </div>
         </div>
 
-        <!-- Chart Section -->
+        <!-- Main Chart Section -->
         <div class="row">
             <div class="col-md-12">
                 <canvas id="myChart" width="400" height="200"></canvas>
             </div>
         </div>
+
+        <!-- Country-wise Sector Chart -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h3 class="text-center">Country-wise Sector Distribution</h3>
+                <canvas id="countryChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h3 class="text-center">Country vs Topic Distribution2</h3>
+                <canvas id="countryTopicChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Country vs PESTLE Pie Chart -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h3 class="text-center">Country vs PESTLE Distribution</h3>
+                <canvas id="countryPestleChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h3 class="text-center">Region vs Topic vs Intensity</h3>
+                <canvas id="regionTopicIntensityChart" width="800" height="400"></canvas>
+            </div>
+        </div>
+        
     </div>
 
     <script>
-        let myChart = null;  // Ensure global scope
+        let myChart = null;
+        let countryChart = null;
+        let countryPestleChart = null;
+        let countryTopicChart = null;
+        let regionTopicIntensityChart = null;
     
-        // Function to initialize the chart
         function initializeChart() {
             const ctx = document.getElementById('myChart').getContext('2d');
             myChart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [
-                        {
-                            label: 'Intensity',
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                            borderColor: 'rgba(255, 99, 132, 1)',
-                            borderWidth: 1,
-                            data: []
-                        },
-                        {
-                            label: 'Likelihood',
-                            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-                            borderColor: 'rgba(54, 162, 235, 1)',
-                            borderWidth: 1,
-                            data: []
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
+                data: { labels: [], datasets: [
+                        { label: 'Intensity', backgroundColor: 'rgba(255, 99, 132, 0.5)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, data: [] },
+                        { label: 'Likelihood', backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1, data: [] }
+                    ] },
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     
-        // Fetch data and populate chart on page load
+        function initializeCountryChart() {
+            const ctx = document.getElementById('countryChart').getContext('2d');
+            countryChart = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: [], datasets: [{ label: 'Sector Usage by Country', backgroundColor: 'rgba(75, 192, 192, 0.5)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1, data: [] }] },
+                options: { responsive: false, maintainAspectRatio: false }
+            });
+        }
+
+        function initializeCountryTopicChart() {
+            const ctx = document.getElementById('countryTopicChart').getContext('2d');
+            countryTopicChart= new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    labels: [], // Topics
+                    datasets: [{ label: 'Sector Usage by Country', backgroundColor: 'rgba(75, 192, 192, 0.5)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1, data: [] }] 
+
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    
+                }
+            });
+        }
+
+        // New Pie Chart for Country vs PESTLE
+        function initializeCountryPestleChart() {
+            const ctx = document.getElementById('countryPestleChart').getContext('2d');
+            countryPestleChart = new Chart(ctx, {
+                type: 'line',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'], borderWidth: 1 }] },
+                options: { responsive: true }
+            });
+        }
+
+        function initializeRegionTopicIntensityChart(){
+            const ctx = document.getElementById('regionTopicIntensityChart').getContext('2d');
+            regionTopicIntensityChart = new Chart(ctx,{
+                type:'bubble',
+                data: {
+                    datasets: []
+                },
+                options: {
+                    responsive:false,
+                    maintainAspectRatio:false,
+                    scales:{
+                        x:{title:{display:true, text:'Regions'},type:'category'},
+                        y:{title:{display:true, text: 'Topics'},type:'category'}
+                    }
+                }
+            })
+        }
+    
         function fetchDataAndInitializeChart() {
             fetch('http://127.0.0.1:8000/api/cofferData/')
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);  // Check the data structure
+                    console.log(data);
     
-                    // Process the data
                     const labels = data.map(entry => entry.topic);
                     const intensityData = data.map(entry => entry.intensity);
                     const likelihoodData = data.map(entry => entry.likelihood);
     
-                    // Initialize chart if not already initialized
-                    if (!myChart) {
-                        initializeChart();
-                    }
+                    if (!myChart) initializeChart();
     
-                    // Update the chart with fetched data
                     myChart.data.labels = labels;
                     myChart.data.datasets[0].data = intensityData;
                     myChart.data.datasets[1].data = likelihoodData;
@@ -108,7 +169,6 @@
                 .catch(error => console.error('Error fetching data:', error));
         }
     
-        // Function to apply filters
         function applyFilters() {
             const sector = document.getElementById('sectorFilter').value;
             const relevance = document.getElementById('relevanceFilter').value;
@@ -118,50 +178,129 @@
                 .then(data => {
                     let filteredData = data;
                     const relevanceNum = relevance ? parseInt(relevance) : null;
+   
+
+                    if (sector) filteredData = filteredData.filter(entry => entry.sector === sector);
+                    if (relevance) filteredData = filteredData.filter(entry => entry.relevance === relevanceNum);
     
-                    // Apply sector filter
-                    if (sector) {
-                        filteredData = filteredData.filter(entry => entry.sector === sector);
-                    }
-    
-                    // Apply relevance filter
-                    if (relevance) {
-                        filteredData = filteredData.filter(entry => entry.relevance === relevanceNum);
-                    }
-    
-                    if (filteredData.length === 0) {
-                        console.warn("No data found for the selected filters.");
-                    }
+                    if (filteredData.length === 0) console.warn("No data found for the selected filters.");
     
                     console.log('Filtered Data:', filteredData);
     
-                    // Process the filtered data
                     const labels = filteredData.map(entry => entry.topic);
                     const intensityData = filteredData.map(entry => entry.intensity);
                     const likelihoodData = filteredData.map(entry => entry.likelihood);
-                    console.log('Chart Data:', labels, intensityData, likelihoodData);
+                   
+
+
+                    if (!myChart) initializeChart();
     
-                    // Ensure chart is initialized before updating
-                    if (!myChart) {
-                        console.warn('Chart not found! Reinitializing...');
-                        initializeChart();
-                    }
-    
-                    // Now safely update the chart
                     myChart.data.labels = labels;
                     myChart.data.datasets[0].data = intensityData;
                     myChart.data.datasets[1].data = likelihoodData;
                     myChart.update();
+    
+                    // Country-wise Data
+                    const countryCounts = {};
+                    filteredData.forEach(entry => {
+                        if (entry.country) {
+                            countryCounts[entry.country] = (countryCounts[entry.country] || 0) + 1;
+                        }
+                    });
+    
+                    const countryLabels = Object.keys(countryCounts);
+                    const countryData = Object.values(countryCounts);
+    
+                    if (!countryChart) initializeCountryChart();
+    
+                    countryChart.data.labels = countryLabels;
+                    countryChart.data.datasets[0].data = countryData;
+                    countryChart.update();
+    
+                    // Country vs PESTLE Distribution (Pie Chart)
+                    const pestleCountryData = {};
+                    filteredData.forEach(entry => {
+                        if (entry.country && entry.pestle) {
+                            const key = `${entry.country} - ${entry.pestle}`;
+                            pestleCountryData[key] = (pestleCountryData[key] || 0) + 1;
+                        }
+                    });
+    
+                    const pestleLabels = Object.keys(pestleCountryData);
+                    const pestleData = Object.values(pestleCountryData);
+    
+                    if (!countryPestleChart) initializeCountryPestleChart();
+    
+                    countryPestleChart.data.labels = pestleLabels;
+                    countryPestleChart.data.datasets[0].data = pestleData;
+                    countryPestleChart.update();
+
+
+                    
+                    let topicCounts = {};
+                    let countries = new Set();    
+                    filteredData.forEach(entry => {
+                        if (entry.country && entry.topic) {
+                            if (!topicCounts[entry.topic]) {
+                                topicCounts[entry.topic] = {};
+                            }
+                            topicCounts[entry.topic][entry.country] = (topicCounts[entry.topic][entry.country] || 0) + 1;
+                            countries.add(entry.country);
+                        }
+                    });
+    
+                    const topics = Object.keys(topicCounts);
+                    const countryList = Array.from(countries);
+                    const datasets = countryList.map(country => ({
+                        label: country,
+                        data: topics.map(topic => topicCounts[topic][country] || 0)
+                    }));
+                    if (!countryTopicChart) initializeCountryTopicChart();
+
+                    countryTopicChart.data.labels = topics;
+                    countryTopicChart.data.datasets = datasets;
+                    countryTopicChart.update();
+
+                    // Bubble Chart Data: Regions vs Topics with Intensity
+                    const regionTopicData = {};
+
+                    filteredData.forEach(entry => {
+                        if (entry.region && entry.topic && entry.intensity) {
+                            const key = `${entry.region}-${entry.topic}`;
+                            regionTopicData[key] = {
+                                x: entry.region,
+                                y: entry.topic,
+                                r: entry.intensity / 2  // Scale intensity to control bubble size
+                            };
+                        }
+                    });
+
+                    const bubbleData = Object.values(regionTopicData);
+
+                    if (!regionTopicIntensityChart) initializeRegionTopicIntensityChart();
+
+                    regionTopicIntensityChart.data.datasets = [{
+                        label: "Intensity of Topics by Region",
+                        backgroundColor: "rgba(255, 99, 132, 0.5)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        data: bubbleData
+                    }];
+
+                    regionTopicIntensityChart.update();
+
+
+
                 })
                 .catch(error => console.error('Error fetching filtered data:', error));
         }
+
+        function getRandomColor() {
+            return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.7)`;
+        } 
     
-        // Ensure the chart is initialized when the page loads
         window.onload = fetchDataAndInitializeChart;
     </script>
-    
 
-    <!-- Bootstrap JS (optional for interactivity) -->
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
