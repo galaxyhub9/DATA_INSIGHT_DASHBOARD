@@ -1,307 +1,683 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Visualization Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Visualization Dashboard</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <!-- Custom CSS -->
+<style>
+    body {
+        background-color: #121212;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+    }
+    .card {
+        background: #1e1e1e;
+        border-radius: 15px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        padding: 20px;
+    }
+    .top-header {
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    h4 {
+        color: #FFD700;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    .sector-dropdown {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+    }
+    
+    #sectorToggle {
+        background: none;
+        border: none;
+        color: #FFD700;
+        font-size: 20px;
+        cursor: pointer;
+        outline: none;
+    }
+    
+    .sector-menu {
+        display: none;
+        position: absolute;
+        top: 30px;
+        right: 0;
+        background: #1e1e1e;
+        border-radius: 10px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+        width: 180px;
+        z-index: 100;
+    }
+    
+    .sector-menu ul {
+        list-style: none;
+        margin: 0;
+        padding: 10px 0;
+    }
+    
+    .sector-menu li {
+        padding: 10px 15px;
+        color: white;
+        font-size: 14px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    
+    .sector-menu li:hover {
+        background: #FFD700;
+        color: #121212;
+        border-radius: 5px;
+    }
+    
+    .chart-container {
+        width: 100%;
+        height: 400px;
+    }
+
+    .chart-container {
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 20px;
+    }
+    
+    #countryChart {
+        width: 60%;
+        height: 300px;
+    }
+    
+    .legend-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        justify-content: flex-start;
+        align-items: center;
+        width: 40%;
+        margin-bottom:0px;
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        color: white;
+    }
+    
+    .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    
+    .dashboard-layout {
+        display: flex;
+        gap: 20px;
+        margin: 20px;
+    }
+
+    .dashboard-left {
+        width: 40%;
+        min-width: 300px;
+    }
+
+    .dashboard-right {
+        flex: 1;
+    }
+
+    /* Update existing card styles */
+    .card {
+        height: calc(90vh - 200px); /* Adjust based on your needs */
+        width: calc(80vh - 200px); /* Adjust based on your needs */
+        overflow-y: auto;
+    }
+
+    .chart-container {
+        flex-direction: column;
+        height: calc(100% - 60px); /* Adjust based on your header height */
+    }
+
+    #countryChart {
+        width: 100% !important;
+        height: 70% !important;
+    }
+
+    .legend-container {
+        width: 100%;
+        height: 30%;
+        overflow-y: auto;
+        padding: 10px;
+    }
+
+    /* Adjust existing legend styles */
+    .legend-item {
+        margin-bottom: 2px;
+    }
+
+
+
+
+
+
+
+    .insight-details {
+        font-size: 14px;
+        color: #888; /* Light gray color */
+        margin-top: 5px;
+    }
+
+
+
+</style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h1 class="text-center">Data Visualization Dashboard</h1>
 
-        <!-- Filters Section -->
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <label for="sectorFilter" class="form-label">Sector</label>
-                <select id="sectorFilter" class="form-select">
-                    <option value="">Select Sector</option>
-                    <option value="Energy">Energy</option>
-                    <option value="Healthcare">Healthcare</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label for="relevanceFilter" class="form-label">Relevance</label>
-                <select id="relevanceFilter" class="form-select">
-                    <option value="">Select Relevance</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="6">6</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <button onclick="applyFilters()" class="btn btn-primary mt-4 w-100">Apply Filters</button>
-            </div>
-        </div>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Data Insights Dashboard</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  </nav>
 
-        <!-- Main Chart Section -->
-        <div class="row">
-            <div class="col-md-12">
-                <canvas id="myChart" width="400" height="200"></canvas>
-            </div>
-        </div>
+  <!-- Container -->
+  <div class="container mt-5">
+    <!-- Filters Section -->
+    <div class="row mb-4">
+      <!-- <div class="col-md-3">
+        <select class="form-control" id="sectorFilter">
+          <option value="">Select Sector</option>
+        </select>
+      </div> -->
+      <div class="col-md-3">
+        <select class="form-control" id="regionFilter">
+          <option value="">Select PESTLE</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <select class="form-control" id="countryFilter">
+          <option value="">Select Country</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="number" class="form-control" id="intensityFilter" placeholder="Intensity (1-20)">
+      </div>
+    </div>
+      <div class="col-md-3">
+        <input type="number" class="form-control" id="mainRelveanceFilter" placeholder="Relevance(1-6) ">
+      </div>
+    </div>
+</div>
 
-        <!-- Country-wise Sector Chart -->
-        <div class="row mt-5">
-            <div class="col-md-12">
-                <h3 class="text-center">Country-wise Sector Distribution</h3>
-                <canvas id="countryChart" width="400" height="200"></canvas>
-            </div>
-        </div>
-        <div class="row mt-5">
-            <div class="col-md-12">
-                <h3 class="text-center">Country vs Topic Distribution2</h3>
-                <canvas id="countryTopicChart" width="400" height="200"></canvas>
-            </div>
-        </div>
 
-        <!-- Country vs PESTLE Pie Chart -->
-        <div class="row mt-5">
-            <div class="col-md-12">
-                <h3 class="text-center">Country vs PESTLE Distribution</h3>
-                <canvas id="countryPestleChart" width="400" height="200"></canvas>
-            </div>
-        </div>
 
-        <div class="row mt-5">
-            <div class="col-md-12">
-                <h3 class="text-center">Region vs Topic vs Intensity</h3>
-                <canvas id="regionTopicIntensityChart" width="800" height="400"></canvas>
+
+<!-- Add a container div for the dashboard layout -->
+<div class="dashboard-layout">
+    <!-- Left side card -->
+    <div class="dashboard-left">
+        <div class="card">
+            <div class="card-header">
+                <h4>Top <span id="countryCount">5</span> Countries in <span id="selectedSector">Energy</span> Sector</h4>
+                <div class="sector-dropdown">
+                    <button id="sectorToggle">▼</button>
+                    <div id="sectorMenu" class="sector-menu">
+                        <ul>
+                            <li onclick="setSector('Energy')">Energy</li>
+                            <li onclick="setSector('Environment')">Environment</li>
+                            <li onclick="setSector('Government')">Government</li>
+                            <li onclick="setSector('Aerospace & defence')">Aerospace & defence</li>
+                            <li onclick="setSector('Manufacturing')">Manufacturing</li>
+                            <li onclick="setSector('Retail')">Retail</li>
+                            <li onclick="setSector('Financial services')">Financial services</li>
+                            <li onclick="setSector('Support services')">Support services</li>
+                            <li onclick="setSector('Information Technology')">Information Technology</li>
+                            <li onclick="setSector('Food & agriculture')">Food & agriculture</li>
+                            <li onclick="setSector('Construction')">Construction</li>
+                            <li onclick="setSector('Transport')">Transport</li>
+                       
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="countryChart"></canvas>
+                    <div id="countryLegend" class="legend-container"></div>
+                </div>
             </div>
         </div>
-        
+    </div>
+        <!-- New Insight Card -->
+        <div class="dashboard-insight">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Top Insight for <span id="selectedCountry">Default Country</span></h4>
+                </div>
+                <div class="card-body">
+                    <p id="topInsightText">Loading insight...</p>
+                    <p id="topInsightDetails" class="insight-details"></p>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+ 
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Intensity vs Likelihood</h4>
+          </div>
+          <div class="card-body">
+            <canvas id="intensityLikelihoodChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Sector Distribution</h4>
+          </div>
+          <div class="card-body">
+            <canvas id="sectorDistributionChart"></canvas>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <script>
-        let myChart = null;
-        let countryChart = null;
-        let countryPestleChart = null;
-        let countryTopicChart = null;
-        let regionTopicIntensityChart = null;
-    
-        function initializeChart() {
-            const ctx = document.getElementById('myChart').getContext('2d');
-            myChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [
-                        { label: 'Intensity', backgroundColor: 'rgba(255, 99, 132, 0.5)', borderColor: 'rgba(255, 99, 132, 1)', borderWidth: 1, data: [] },
-                        { label: 'Likelihood', backgroundColor: 'rgba(54, 162, 235, 0.5)', borderColor: 'rgba(54, 162, 235, 1)', borderWidth: 1, data: [] }
-                    ] },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-    
-        function initializeCountryChart() {
-            const ctx = document.getElementById('countryChart').getContext('2d');
-            countryChart = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ label: 'Sector Usage by Country', backgroundColor: 'rgba(75, 192, 192, 0.5)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1, data: [] }] },
-                options: { responsive: false, maintainAspectRatio: false }
-            });
-        }
+    <!-- Filters and Visualizations Section -->
+    <div class="row">
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Geographical Distribution</h4>
+          </div>
+          <div class="card-body">
+            <div id="geoChart" style="height: 400px;"></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card">
+          <div class="card-header">
+            <h4>Relevance Over Time</h4>
+          </div>
+          <div class="card-body">
+            <canvas id="relevanceTimeChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
 
-        function initializeCountryTopicChart() {
-            const ctx = document.getElementById('countryTopicChart').getContext('2d');
-            countryTopicChart= new Chart(ctx, {
-                type: 'bubble',
-                data: {
-                    labels: [], // Topics
-                    datasets: [{ label: 'Sector Usage by Country', backgroundColor: 'rgba(75, 192, 192, 0.5)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 1, data: [] }] 
+    <!-- Footer -->
+    <footer class="mt-5 text-center">
+      <p>&copy; 2025 Data Insights Dashboard. All rights reserved.</p>
+    </footer>
+ 
 
-                },
-                options: {
-                    responsive: false,
-                    maintainAspectRatio: false,
-                    
+  <!-- Bootstrap JS & JQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Google Maps API (Optional, if you use a map) -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" async defer></script>
+
+  <!-- Custom JavaScript -->
+  <script>
+
+    let countryChart = null;
+
+    document.addEventListener("DOMContentLoaded", function() {
+        setSector('Energy');  // Set default sector on load
+        getTopInsight(defaultCountry);
+
+    });
+    
+    document.getElementById("sectorToggle").addEventListener("click", function() {
+        let menu = document.getElementById("sectorMenu");
+        menu.style.display = (menu.style.display === "block") ? "none" : "block";
+    });
+    
+    document.addEventListener("click", function(event) {
+        let menu = document.getElementById("sectorMenu");
+        let button = document.getElementById("sectorToggle");
+        
+        if (event.target !== menu && event.target !== button) {
+            menu.style.display = "none";
+        }
+    });
+    
+    function setSector(sector) {
+        document.getElementById("selectedSector").textContent = sector;
+        document.getElementById("sectorMenu").style.display = "none";
+        applySectorFilter(sector);
+    }
+    
+
+    function applySectorFilter(selectedSector) {
+    //const selectedSector = document.getElementById('sectorFilter').value;
+    document.getElementById('selectedSector').textContent = selectedSector;
+
+
+    fetch('http://127.0.0.1:8000/api/cofferData/')  // Adjust to your API URL
+        .then(response => response.json())
+        .then(data => {
+            let filteredData = data.filter(entry => entry.sector === selectedSector);
+
+            // Count occurrences of each country in the selected sector
+            let countryCounts = {};
+            filteredData.forEach(entry => {
+                if (entry.country) {
+                    countryCounts[entry.country] = (countryCounts[entry.country] || 0) + 1;
                 }
             });
-        }
 
-        // New Pie Chart for Country vs PESTLE
-        function initializeCountryPestleChart() {
-            const ctx = document.getElementById('countryPestleChart').getContext('2d');
-            countryPestleChart = new Chart(ctx, {
-                type: 'line',
-                data: { labels: [], datasets: [{ data: [], backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'], borderWidth: 1 }] },
-                options: { responsive: true }
-            });
-        }
+            // Get the top 5 most occurring countries
+            let sortedCountries = Object.entries(countryCounts)
+                .sort((a, b) => b[1] - a[1]) // Sort by count (descending)
+                .slice(0, 5); // Top 5 countries
 
-        function initializeRegionTopicIntensityChart(){
-            const ctx = document.getElementById('regionTopicIntensityChart').getContext('2d');
-            regionTopicIntensityChart = new Chart(ctx,{
-                type:'bubble',
-                data: {
-                    datasets: []
+            const topCountries = sortedCountries.map(item => item[0]); // Country names
+            const topCounts = sortedCountries.map(item => item[1]); // Count values
+            document.getElementById("countryCount").textContent = topCountries.length;
+
+
+            // Render Chart
+            if (!countryChart) {
+                initializeCountryChart(topCountries, topCounts, selectedSector);
+            } else {
+                updateCountryChart(topCountries, topCounts, selectedSector);
+            }
+        })
+        .catch(error => console.error('Error fetching data:', error));
+}
+
+function initializeCountryChart(topCountries, topCounts, selectedSector) {
+    const ctx = document.getElementById('countryChart').getContext('2d');
+    
+    countryChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: topCountries,  // Top 5 countries on X-axis
+            datasets: [{
+                label: `Top 5 Countries in ${selectedSector}`,
+                data: topCounts,  // Frequency count on Y-axis
+                backgroundColor: getPremiumColors(5),
+                borderRadius: 10,  
+            }],
+        },
+            options: {
+            indexAxis: 'y', 
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Occurrences', font: { size: 14 } },
+                    ticks: { color: '#ffffff' }
                 },
-                options: {
-                    responsive:false,
-                    maintainAspectRatio:false,
-                    scales:{
-                        x:{title:{display:true, text:'Regions'},type:'category'},
-                        y:{title:{display:true, text: 'Topics'},type:'category'}
-                    }
+                y: {
+                    title: { display: false, text: 'Country', font: { size: 14 } },
+                    ticks: { display:false,color: '#ffffff' }
                 }
-            })
+            }
         }
-    
-        function fetchDataAndInitializeChart() {
-            fetch('http://127.0.0.1:8000/api/cofferData/')
-                .then(response => response.json())
-                .then(data => {
-                    console.log(data);
-    
-                    const labels = data.map(entry => entry.topic);
-                    const intensityData = data.map(entry => entry.intensity);
-                    const likelihoodData = data.map(entry => entry.likelihood);
-    
-                    if (!myChart) initializeChart();
-    
-                    myChart.data.labels = labels;
-                    myChart.data.datasets[0].data = intensityData;
-                    myChart.data.datasets[1].data = likelihoodData;
-                    myChart.update();
-                })
-                .catch(error => console.error('Error fetching data:', error));
+    });
+    updateLegend(topCountries);
+
+}
+
+function updateCountryChart(topCountries, topCounts, selectedSector) {
+    countryChart.data.labels = topCountries;
+    countryChart.data.datasets[0].label = `Top 5 Countries in ${selectedSector}`;
+    countryChart.data.datasets[0].data = topCounts;
+    countryChart.data.datasets[0].backgroundColor = getPremiumColors(5);
+    countryChart.update();
+    updateLegend(topCountries);
+
+}
+
+function updateLegend(topCountries) {
+    const colors = getPremiumColors(topCountries.length);
+    const legendContainer = document.getElementById("countryLegend");
+    legendContainer.innerHTML = "";
+
+    topCountries.forEach((country, index) => {
+        const legendItem = document.createElement("div");
+        legendItem.classList.add("legend-item");
+
+        const legendDot = document.createElement("span");
+        legendDot.classList.add("legend-dot");
+        legendDot.style.backgroundColor = colors[index];
+
+        legendItem.appendChild(legendDot);
+        legendItem.appendChild(document.createTextNode(country));
+
+        legendContainer.appendChild(legendItem);
+    });
+}
+
+function getPremiumColors(count) {
+    return ['#FF6B6B', '#54A0FF', '#1DD1A1', '#F368E0', '#5F27CD'].slice(0, count);
+}
+
+
+
+
+// Default country if no selection is made
+let defaultCountry = "India";
+
+// Function to fetch data from API and process insights
+async function getTopInsight(selectedCountry) {
+    let country = selectedCountry || defaultCountry;
+
+    try {
+        // Fetch data from API
+        let response = await fetch('http://127.0.0.1:8000/api/cofferData/');
+        let insightsData = await response.json();
+
+        // Filter insights for the selected country
+        let countryInsights = insightsData.filter(insight => insight.country === country);
+
+        // If no insights are found, show message
+        if (countryInsights.length === 0) {
+            document.getElementById("topInsightText").innerText = "No insights available for " + country;
+            document.getElementById("topInsightDetails").innerText = "";
+
+            return;
         }
-    
-        function applyFilters() {
-            const sector = document.getElementById('sectorFilter').value;
-            const relevance = document.getElementById('relevanceFilter').value;
-    
-            fetch('http://127.0.0.1:8000/api/cofferData/')
-                .then(response => response.json())
-                .then(data => {
-                    let filteredData = data;
-                    const relevanceNum = relevance ? parseInt(relevance) : null;
-   
 
-                    if (sector) filteredData = filteredData.filter(entry => entry.sector === sector);
-                    if (relevance) filteredData = filteredData.filter(entry => entry.relevance === relevanceNum);
-    
-                    if (filteredData.length === 0) console.warn("No data found for the selected filters.");
-    
-                    console.log('Filtered Data:', filteredData);
-    
-                    const labels = filteredData.map(entry => entry.topic);
-                    const intensityData = filteredData.map(entry => entry.intensity);
-                    const likelihoodData = filteredData.map(entry => entry.likelihood);
-                   
+        // Sort insights by relevance, then intensity, then likelihood
+        countryInsights.sort((a, b) => {
+            if (b.relevance !== a.relevance) {
+                return b.relevance - a.relevance;
+            } else if (b.intensity !== a.intensity) {
+                return b.intensity - a.intensity;
+            } else {
+                return b.likelihood - a.likelihood;
+            }
+        });
 
+        // Get the top 4 insights
+        let topInsights = countryInsights.slice(0, 3);
+        let insightsHTML = "";  // To store all insights
 
-                    if (!myChart) initializeChart();
-    
-                    myChart.data.labels = labels;
-                    myChart.data.datasets[0].data = intensityData;
-                    myChart.data.datasets[1].data = likelihoodData;
-                    myChart.update();
-    
-                    // Country-wise Data
-                    const countryCounts = {};
-                    filteredData.forEach(entry => {
-                        if (entry.country) {
-                            countryCounts[entry.country] = (countryCounts[entry.country] || 0) + 1;
-                        }
-                    });
-    
-                    const countryLabels = Object.keys(countryCounts);
-                    const countryData = Object.values(countryCounts);
-    
-                    if (!countryChart) initializeCountryChart();
-    
-                    countryChart.data.labels = countryLabels;
-                    countryChart.data.datasets[0].data = countryData;
-                    countryChart.update();
-    
-                    // Country vs PESTLE Distribution (Pie Chart)
-                    const pestleCountryData = {};
-                    filteredData.forEach(entry => {
-                        if (entry.country && entry.pestle) {
-                            const key = `${entry.country} - ${entry.pestle}`;
-                            pestleCountryData[key] = (pestleCountryData[key] || 0) + 1;
-                        }
-                    });
-    
-                    const pestleLabels = Object.keys(pestleCountryData);
-                    const pestleData = Object.values(pestleCountryData);
-    
-                    if (!countryPestleChart) initializeCountryPestleChart();
-    
-                    countryPestleChart.data.labels = pestleLabels;
-                    countryPestleChart.data.datasets[0].data = pestleData;
-                    countryPestleChart.update();
+        // Loop through the top 4 insights
+        topInsights.forEach((insight, index) => {
+            let formattedDate = "";
+            if (insight.published) {
+                let dateObj = new Date(insight.published);
+                let month = dateObj.toLocaleString('en-US', { month: 'long' }); // Full month name (e.g., "December")
+                let year = dateObj.getFullYear();
+                formattedDate = ` | ${month} ${year}`;
+            }
 
+            let sourceText = insight.source ? `Source: ${insight.source}` : "";
 
+            // Append each insight into the HTML string
+            insightsHTML += `
+                <div class="insight-item">
+                    <p class="insight-rank">#${index + 1} <p class="insight-text">${insight.insight}</p></p>
                     
-                    let topicCounts = {};
-                    let countries = new Set();    
-                    filteredData.forEach(entry => {
-                        if (entry.country && entry.topic) {
-                            if (!topicCounts[entry.topic]) {
-                                topicCounts[entry.topic] = {};
-                            }
-                            topicCounts[entry.topic][entry.country] = (topicCounts[entry.topic][entry.country] || 0) + 1;
-                            countries.add(entry.country);
-                        }
-                    });
+                    <p class="insight-details"><span class="light-text">${sourceText}${formattedDate}</span></p>
+                </div>
+            `;
+        });
+
+        // Insert all insights into the container
+        document.getElementById("topInsightText").innerHTML = insightsHTML;
+        document.getElementById("selectedCountry").innerText = country;
+
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        document.getElementById("topInsightText").innerText = "Failed to load insights.";
+        document.getElementById("topInsightDetails").innerText = "";
+    }
+}
+// Function to handle country selection from filter
+document.getElementById("countryFilter").addEventListener("change", function () {
+    let selectedCountry = this.value;
+    getTopInsight(selectedCountry);
+});
+
+
+
+
+// INSIGHTS ARE WORKING TILL here
+
+
+
+    // Fetch data from the API
+fetch('http://127.0.0.1:8000/api/cofferData/')
+  .then(response => response.json())
+  .then(data => {
+    // Process data for visualization
+    const sectors = getUniqueValues(data, 'sector');
+    const regions = getUniqueValues(data, 'region');
+    const countries = getUniqueValues(data, 'country');
+
+    // Populate filter dropdowns
     
-                    const topics = Object.keys(topicCounts);
-                    const countryList = Array.from(countries);
-                    const datasets = countryList.map(country => ({
-                        label: country,
-                        data: topics.map(topic => topicCounts[topic][country] || 0)
-                    }));
-                    if (!countryTopicChart) initializeCountryTopicChart();
+    populateDropdown('#regionFilter', regions);
+    populateDropdown('#countryFilter', countries);
 
-                    countryTopicChart.data.labels = topics;
-                    countryTopicChart.data.datasets = datasets;
-                    countryTopicChart.update();
+    // Create charts
+    createIntensityLikelihoodChart(data);
+    createSectorDistributionChart(data);
+    createRelevanceTimeChart(data);
+  });
 
-                    // Bubble Chart Data: Regions vs Topics with Intensity
-                    const regionTopicData = {};
+// Function to get unique values for filters
+function getUniqueValues(data, key) {
+  return [...new Set(data.map(item => item[key]))];
+}
 
-                    filteredData.forEach(entry => {
-                        if (entry.region && entry.topic && entry.intensity) {
-                            const key = `${entry.region}-${entry.topic}`;
-                            regionTopicData[key] = {
-                                x: entry.region,
-                                y: entry.topic,
-                                r: entry.intensity / 2  // Scale intensity to control bubble size
-                            };
-                        }
-                    });
+// Function to populate dropdown filters
+function populateDropdown(selector, options) {
+  const dropdown = document.querySelector(selector);
+  options.forEach(option => {
+    const optionElement = document.createElement('option');
+    optionElement.textContent = option;
+    dropdown.appendChild(optionElement);
+  });
+}
 
-                    const bubbleData = Object.values(regionTopicData);
+// Create Intensity vs Likelihood Chart
+function createIntensityLikelihoodChart(data) {
+  const ctx = document.getElementById('intensityLikelihoodChart').getContext('2d');
+  const chartData = {
+    labels: data.map(item => item.title),
+    datasets: [{
+      label: 'Intensity vs Likelihood',
+      data: data.map(item => ({ x: item.intensity, y: item.likelihood })),
+      backgroundColor: 'rgba(75, 192, 192, 0.2)',
+      borderColor: 'rgba(75, 192, 192, 1)',
+      borderWidth: 1
+    }]
+  };
+  new Chart(ctx, {
+    type: 'scatter',
+    data: chartData,
+    options: {
+      scales: {
+        x: { min: 0, max: 10 },
+        y: { min: 0, max: 10 }
+      }
+    }
+  });
+}
 
-                    if (!regionTopicIntensityChart) initializeRegionTopicIntensityChart();
+// Create Sector Distribution Chart
+function createSectorDistributionChart(data) {
+  const ctx = document.getElementById('sectorDistributionChart').getContext('2d');
+  const sectorCount = countOccurrences(data, 'sector');
+  const chartData = {
+    labels: Object.keys(sectorCount),
+    datasets: [{
+      data: Object.values(sectorCount),
+      backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'],
+      hoverOffset: 4
+    }]
+  };
+  new Chart(ctx, {
+    type: 'pie',
+    data: chartData
+  });
+}
 
-                    regionTopicIntensityChart.data.datasets = [{
-                        label: "Intensity of Topics by Region",
-                        backgroundColor: "rgba(255, 99, 132, 0.5)",
-                        borderColor: "rgba(255, 99, 132, 1)",
-                        data: bubbleData
-                    }];
+// Create Relevance Over Time Chart
+function createRelevanceTimeChart(data) {
+  const ctx = document.getElementById('relevanceTimeChart').getContext('2d');
+  const chartData = {
+    labels: data.map(item => item.published),
+    datasets: [{
+      label: 'Relevance Over Time',
+      data: data.map(item => item.relevance),
+      fill: false,
+      borderColor: '#4bc0c0',
+      tension: 0.1
+    }]
+  };
+  new Chart(ctx, {
+    type: 'line',
+    data: chartData
+  });
+}
 
-                    regionTopicIntensityChart.update();
+// Helper function to count occurrences of a key in an array of objects
+function countOccurrences(arr, key) {
+  return arr.reduce((count, item) => {
+    count[item[key]] = (count[item[key]] || 0) + 1;
+    return count;
+  }, {});
+}
 
+  </script>
 
-
-                })
-                .catch(error => console.error('Error fetching filtered data:', error));
-        }
-
-        function getRandomColor() {
-            return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.7)`;
-        } 
-    
-        window.onload = fetchDataAndInitializeChart;
-    </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
 </body>
 </html>
+
+
+<!-- code which is working and making sense but no filters only options to select that's it -->
